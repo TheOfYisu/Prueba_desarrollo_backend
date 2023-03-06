@@ -156,6 +156,60 @@ def updatedriver(iddriver):
         return jsonify({"informacion": e})
 
 
+@app.route('/getvehicle', methods=['GET'])
+def getvehicle():
+    try:
+        vehicles = Vehicles.select()
+        listvehicle = []
+        for Vehicle in vehicles:
+            content = {'ID': Vehicle.id, 'DESCRIPTION': Vehicle.description, 'YEAR': Vehicle.year, 'MAKE': Vehicle.make,
+                       'CAPACITY': Vehicle.capacity, 'ACTIVE': Vehicle.active}
+            listvehicle.append(content)
+        return jsonify(listvehicle)
+    except Exception as e:
+        return jsonify({"informacion": e})
+
+
+@app.route('/addvehicle', methods=['POST'])
+def addvehicle():
+    try:
+        print(request.json)
+        DESCRIPTION = request.json['DESCRIPTION']
+        YEAR = int(request.json['YEAR'])
+        MAKE = int(request.json['MAKE'])
+        CAPACITY = int(request.json['CAPACITY'])
+        ACTIVE = int(request.json['ACTIVE'])
+        vehicle = Vehicles(description=DESCRIPTION, year=YEAR, make=MAKE, capacity=CAPACITY, active=ACTIVE)
+        vehicle.save()
+        return jsonify("listdrivers")
+    except Exception as e:
+        return jsonify({"informacion": e})
+
+
+@app.route('/deletevehicle/<idvehicle>', methods=['DELETE'])
+def deletevehicle(idvehicle):
+    try:
+        driverdeleter = Vehicles.get(Vehicles.id == idvehicle)
+        driverdeleter.delete_instance()
+        return jsonify("Dato eliminado")
+    except Exception as e:
+        return jsonify({"informacion": e})
+
+
+@app.route('/updatevehicle/<idvehicle>', methods=['PUT'])
+def updatevehicle(idvehicle):
+    try:
+        DESCRIPTION = request.json['DESCRIPTION']
+        YEAR = int(request.json['YEAR'])
+        MAKE = int(request.json['MAKE'])
+        CAPACITY = int(request.json['CAPACITY'])
+        ACTIVE = int(request.json['ACTIVE'])
+        Vehicles.update(description=DESCRIPTION, year=YEAR, make=MAKE, capacity=CAPACITY, active=ACTIVE).where(
+            Vehicles.id == idvehicle).execute()
+        return jsonify("Dato eliminado")
+    except Exception as e:
+        return jsonify({"informacion": e})
+
 if __name__ == "__main__":
     if not Drivers.table_exists():
         db.create_tables([Drivers])
