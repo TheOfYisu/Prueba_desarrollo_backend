@@ -186,6 +186,95 @@ def addvehicle():
         return jsonify({"informacion": e})
 
 
+@app.route('/getroutes', methods=['GET'])
+def getroutes():
+    try:
+        routes = Routes.select()
+        listroute = []
+        for route in routes:
+            driver = Drivers.get(Drivers.id == route.drivers_id)
+            vehicle = Vehicles.get(Vehicles.id == route.vehicle_id)
+            namedriver = "{} {}".format(driver.first_name, driver.last_name)
+            vehiclemake = vehicle.make
+            content = {"ID": route.id, "DESCRIPTION": route.description, "DRIVER": namedriver, "VEHICLE": vehiclemake,
+                       "ACTIVE": route.active}
+            listroute.append(content)
+        return jsonify(listroute)
+    except Exception as e:
+        return jsonify({"informacion": e})
+
+
+@app.route('/getifoformsrouter', methods=['GET'])
+def getifoformsrouter():
+    try:
+        drivers = Drivers.select()
+        vehicles = Vehicles.select()
+        listdrivers = []
+        listvehicle = []
+        for driver in drivers:
+            namedriver = "{} {}".format(driver.first_name, driver.last_name)
+            content = {"ID": driver.id, "NAMEDRIVER": namedriver}
+            listdrivers.append(content)
+        for vehicle in vehicles:
+            content = {"ID": vehicle.id, "MAKE": vehicle.make}
+            listvehicle.append(content)
+        return jsonify({"listdriver": listdrivers, "listvehicle": listvehicle})
+    except Exception as e:
+        return jsonify({"informacion": e})
+
+
+@app.route('/addroute', methods=['POST'])
+def addroute():
+    try:
+        DESCRIPTION = request.json['DESCRIPTION']
+        DRIVER = int(request.json['DRIVER'])
+        VEHICLE = int(request.json['VEHICLE'])
+        ACTIVE = int(request.json['ACTIVE'])
+        route = Routes(description=DESCRIPTION, drivers_id=DRIVER, vehicle_id=VEHICLE, active=ACTIVE)
+        route.save()
+        return jsonify("listdrivers")
+    except Exception as e:
+        return jsonify({"informacion": e})
+
+
+@app.route('/getroute/<idroute>', methods=['GET'])
+def getroute(idroute):
+    try:
+        route = Routes.get(Routes.id == idroute)
+        driver = Drivers.get(Drivers.id == route.drivers_id)
+        vehicle = Vehicles.get(Vehicles.id == route.vehicle_id)
+        content = {"ID_ROUTE": route.id, "DESCRIPTION_ROUTE": route.description, "ACTIVE_ROUTE": route.active}
+        content2 = {'ID_VEHICLE': vehicle.id, 'DESCRIPTION_VEHICLE': vehicle.description, 'CAPACITY': vehicle.capacity}
+        content3 = ({'ID_DRIVER': driver.id, 'LAST_NAME': driver.last_name, 'FIRST_NAME': driver.first_name,
+                     'ADDRESS': driver.address, 'CITY': driver.city, 'PHONE': driver.phone})
+        return jsonify({"DATAROUTER": content, "DATAVEHICLE": content2, "DATADRIVER": content3})
+    except Exception as e:
+        return jsonify({"informacion": e})
+
+
+@app.route('/deleteroute/<idroute>', methods=['DELETE'])
+def deleteroute(idroute):
+    try:
+        routedelete = Routes.get(Routes.id == idroute)
+        routedelete.delete_instance()
+        return jsonify("Dato eliminado")
+    except Exception as e:
+        return jsonify({"informacion": e})
+
+
+@app.route('/updateroute/<idroute>', methods=['PUT'])
+def updateroute(idroute):
+    try:
+        DESCRIPTION = request.json['DESCRIPTION']
+        DRIVER = int(request.json['DRIVER'])
+        VEHICLE = int(request.json['VEHICLE'])
+        ACTIVE = int(request.json['ACTIVE'])
+        Routes.update(description=DESCRIPTION, drivers_id=DRIVER, vehicle_id=VEHICLE, active=ACTIVE).where(
+            Routes.id == idroute).execute()
+        return jsonify("listdrivers")
+    except Exception as e:
+        return jsonify({"informacion": e})
+
 @app.route('/deletevehicle/<idvehicle>', methods=['DELETE'])
 def deletevehicle(idvehicle):
     try:
