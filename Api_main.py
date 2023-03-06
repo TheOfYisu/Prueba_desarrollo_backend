@@ -66,7 +66,24 @@ class Users(Model):
     class Meta:
         database = db
 
-
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        user = request.json['user']
+        password = request.json['password']
+        query=Users.select(Users.password).where(Users.user==user)
+        if query:
+            passworduser=query.get()
+            if password==passworduser.password:
+                username=passworduser.username
+                jwt_token = jwt_api.generar_jwt({"usuario": user})
+                return jsonify({"token": jwt_token,"State":"True","Username":username})
+            else:
+                return jsonify({"State":"False"})
+        else:
+            return jsonify({"State":"False"})
+    except Exception as e:
+        return jsonify({"informacion": e})
 
 if __name__ == "__main__":
     if not Drivers.table_exists():
